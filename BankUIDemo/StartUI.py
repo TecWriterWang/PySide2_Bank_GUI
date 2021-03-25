@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2020/7/18 17:10
 
-
 # 开始界面
 
 class StartUI():
@@ -214,7 +213,7 @@ class StartUI():
 
     # 跳转到交易界面，先进入进度条，然后进入界面
     def LogToBar(self):
-        self.ui.hide()
+        # self.ui.hide()
         # 使用队列存取线程中函数的返回值
         q1 = mp.Queue(10)
 

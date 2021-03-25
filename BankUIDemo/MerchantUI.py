@@ -34,8 +34,12 @@ class MerchantUI(QMainWindow):
         self.ui.setupUi(self)
 
         self.DB = Op_DB()
-        self.Userinfo = self.DB.retUserInfo(self.CardID)
-        self.CardID = self.Userinfo[1]
+        try:
+            self.Userinfo = self.DB.retUserInfo(self.CardID)
+            self.CardID = self.Userinfo[1]
+        except:
+            print("Accout Not Exist")
+            exit()
 
         self.status = QMainWindow.statusBar(self)
         self.status.font()
@@ -76,11 +80,11 @@ class MerchantUI(QMainWindow):
         self.Userinfo = self.DB.retUserInfo(self.CardID)
         global input_value
         while 1:
-            input_value = list(QInputDialog().getText(self, "请输入金额", "Money:", QLineEdit.Normal, ""))
+            input_value = list(QInputDialog().getText(self, "请输入金额", "Money(仅支持到分):", QLineEdit.Normal, ""))
             if input_value[1]:
                 try:
-                    s = re.compile(r"^0$|0.0$|[1-9]+(.[0-9]{2})?$").fullmatch(input_value[0])
-                    if re.compile(r"^[1-9]+(.[0-9]{2})?$").fullmatch(input_value[0]): # 可以匹配小数
+                    s = re.compile(r"^0$|[0-9]+(.[0-9]+)?$").fullmatch(input_value[0])
+                    if re.compile(r"^0$|[0-9]+(.[0-9]+)?$").fullmatch(input_value[0]): # 可以匹配小数
                         input_value[0] = float(input_value[0])
                         global input_Value_flag
                         input_Value_flag = True
@@ -90,7 +94,7 @@ class MerchantUI(QMainWindow):
                         continue
 
                 except ValueError:
-                        QMessageBox.information(self, '金额有误', "请重新输入金额，金额必须为大于0的有效数字")
+                        QMessageBox.information(self, '操作异常', "-1")
                         continue
             else:
                 QMessageBox.information(self, '交易失败', "已取消交易")
@@ -107,9 +111,9 @@ class MerchantUI(QMainWindow):
             reply_cash = QMessageBox.question(self,u'确认金额',f"您存入的金额是{input_value[0]}元",QMessageBox.Yes, QMessageBox.No)
             Save_value = (self.Userinfo[8]) + float(input_value[0])
             if reply_cash == QMessageBox.Yes:
-                Save_flag = self.DB.ModeifyInfo((self.Userinfo[1],self.Userinfo[2],'cash',Save_value,f'Save moeny {Save_value}'))
+                Save_flag = self.DB.ModeifyInfo((self.Userinfo[1],self.Userinfo[2],'cash',Save_value,f'Saved moeny ￥{float(input_value[0])}, Balance:￥{Save_value}'))
                 if Save_flag != -1 :
-                    QMessageBox.information(self, '操作成功', "{0}已存入{1}元，当前账户余额{2}".format(self.CardID, input_value,Save_value))
+                    QMessageBox.information(self, '操作成功', "{0}已存入￥{1}元，当前账户余额￥{2}".format(self.CardID, input_value[0],Save_value))
                     self.DB.ConFirm_DB(1,2)
                 else:
                     QMessageBox.information(self, '操作失败', "存钱失败，请拿好您的现金,人工台办理业务")
@@ -138,9 +142,9 @@ class MerchantUI(QMainWindow):
 
             Save_value = (self.Userinfo[8]) - input_value[0]
             if reply_cash == QMessageBox.Yes:
-                Save_flag = self.DB.ModeifyInfo((self.Userinfo[1],self.Userinfo[2],'cash',Save_value,f'Get moeny {input_value[0]}'))
+                Save_flag = self.DB.ModeifyInfo((self.Userinfo[1],self.Userinfo[2],'cash',Save_value,f'Got moeny {input_value[0]},Balance:￥{Save_value}'))
                 if Save_flag != -1 :
-                    QMessageBox.information(self, '操作成功', "{0}已取出{1}元，当前账户余额{2}".format(self.CardID, input_value[0],Save_value))
+                    QMessageBox.information(self, '操作成功', "{0}已取出￥{1}元，当前账户余额￥{2}".format(self.CardID, input_value[0],Save_value))
                     self.DB.ConFirm_DB(1, 2)
                 else:
                     QMessageBox.information(self, '操作失败', "取现失败，请到人工台办理业务")
@@ -230,8 +234,8 @@ class TranUI(QWidget):
             try:
                 if (len(Rec_CardID) and len(Rec_Name) and len(Tran_Cash)):
 
-                    s = re.compile(r"[^-][0-9]*.?[0-9]*").fullmatch(Tran_Cash)
-                    if re.compile(r"[^-][0-9]*.?[0-9]*").fullmatch(Tran_Cash):  # 可以匹配小数
+                    s = re.compile(r"^0$|[0-9]+(.[0-9]+)?$").fullmatch(Tran_Cash)
+                    if re.compile(r"^0$|[0-9]+(.[0-9]+)?$").fullmatch(Tran_Cash):  # 可以匹配小数
                         Tran_Cash = float(Tran_Cash)
                         input_Value_flag = True
 
@@ -333,5 +337,5 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon('../UI/Bank.ico'))
-    panel = MerchantUI(62201206121)
+    panel = MerchantUI(62226479583)
     sys.exit(app.exec_())

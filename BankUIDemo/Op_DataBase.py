@@ -19,7 +19,8 @@ class Op_DB(object): # 必须使用继承
         return cls._inst
 
     def __init__(self):
-        print("数据库初始化")
+        # print(self)
+        # print("数据库初始化")
         self.connection = pymysql.connect('localhost', 'root', 'root', db='bankinfo')
         # 这里的数据库可以使用具体存在数据库，也可以指定某一类，例如mysql，后续使用时在语句中指定数据库和
         self.cursor = self.connection.cursor()
@@ -104,7 +105,7 @@ class Op_DB(object): # 必须使用继承
 
         try:
             if self.connection:
-                print("{}数据库连接成功".format(ActiveDB))
+                # print("{}数据库连接成功".format(ActiveDB))
                 self.cursor.execute(f'use {ActiveDB};')
 
                 # # 检测数据银行数据库是否存在 # 检测两张表是否存在
@@ -116,7 +117,7 @@ class Op_DB(object): # 必须使用继承
 
 
         except Exception:
-            print("连接数据库失败")
+            print(f"连接{ActiveDB}数据库失败")
         # return self.connection,self.cursor
 
     def retUserInfo(self,CardID):
@@ -300,7 +301,8 @@ class Op_DB(object): # 必须使用继承
         str = ''
         for info in result:
             str += '操作时间:{1},执行操作:{0}\n'.format(info[2], info[3])
-        print(str)
+        # print(str)
+
         # 返回查询结果
         return result
         # self.connection.close()

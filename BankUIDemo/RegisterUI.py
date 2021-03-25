@@ -1,8 +1,9 @@
 
 from __init__ import *
+from ui2py.Register import *
 
 # 注册窗口
-class RegisterUI(QMainWindow):
+class RegisterUI(QMainWindow,Ui_RegisterUI):
 
     def __init__(self):
 
@@ -126,7 +127,7 @@ class RegisterUI(QMainWindow):
 # 导入放在最后，因为交叉引用会出问题
 
 from StartUI import StartUI
-from ui2py.Register import *
+# from ui2py.Register import *
 
 
 if __name__ == '__main__':

@@ -46,8 +46,8 @@ class Bar:
         if self.ui.LoginProgress.value() == 100:
             self.flag_login = 1
             self.q.put(self.flag_login)
-            print("Login Successful")
-            QMessageBox.information(self.ui, '登录成功', "正在准备界面，请稍等...")
+            # print("Login Successful")
+            # QMessageBox.information(self.ui, '登录成功', "正在准备界面，请稍等...")
             self.ui.close()
 
 

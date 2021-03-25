@@ -3,11 +3,13 @@
 block_cipher = None
 
 
-a = Analysis(['StartUI.py'],
-             pathex=['H:\\PythonWorkSpace\\PyQtStudio\\BankUIDemo'],
+a = Analysis(['H:\\PythonWorkSpace\\PyQtStudio\\BankUIDemo\\StartUI.py'],
+             pathex=['H:\\PythonWorkSpace\\PyQtStudio\\venv\\Scripts',
+             'H:\\PythonWorkSpace\\PyQtStudio\\BankUIDemo',
+             'H:\\PythonWorkSpace\\PyQtStudio\\UI\\*'],
              binaries=[],
              datas=[],
-             hiddenimports=[],
+             hiddenimports=['PySide2.QtXml'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -24,10 +26,10 @@ exe = EXE(pyz,
           a.datas,
           [],
           name='StartUI',
-          debug=False,
+          debug=True,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=True )
+          console=True , icon='H:\\PythonWorkSpace\\PyQtStudio\\UI\\Bank.ico')
