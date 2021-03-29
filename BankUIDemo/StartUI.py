@@ -3,14 +3,27 @@
 
 # 开始界面
 
-class StartUI():
+from PySide2.QtCore import QThread,Signal,Slot
+import multiprocessing_win
+import multiprocessing
+
+
+class StartUI(QThread):
+
+    signal_startui_to_Merchantui = Signal()
 
     def __init__(self):
+        super().__init__()
 
         self.ui = QUiLoader().load('../UI/Start.ui')
         self.ui.setWindowTitle('登录')
         self.ui.setFixedSize(self.ui.width(), self.ui.height())
         self.DB = Op_DB()
+
+
+        # 起始界面跳转交易界面flag
+        self.Start_to_MerchantUI_Falg = False
+        self.signal_startui_to_Merchantui.connect(self.startui_to_Merchantui)
 
         self.account = None
         self.password = None
@@ -69,11 +82,47 @@ class StartUI():
         else:
             flag_check = self.DB.Login_queue(self.account, self.bt_check)
 
-            if flag_check[0]:#从数据库中查询当前账户名
+            # 从数据库中查询到当前账户名
+            if flag_check[0]:
                 QMessageBox.information(self.ui,'操作成功','当前账户可用')
 
             else:
                 QMessageBox.warning(self.ui,'操作失败','当前账户不存在，请重新检查账户')
+
+    @Slot()
+    def startui_to_Merchantui(self):
+        # print("process1.kill()1\n")
+
+        # 使用队列存取线程中函数的返回值
+        q1 = mp.Queue(10)
+        # bar = Bar(q1)
+        # bar.AnimalBar()
+
+        # 重新开启进程，运行进度条界面
+        global bar_process
+        bar_process = mp.Process(target=BarInstance,args=(q1,))
+        bar_process.daemon = True
+        # print("{0}process1 Creat ok()\n".format(process1))
+        bar_process.start()
+        bar_process.join()
+        # print("process1.kill()3\n")
+
+        if q1.get():
+            self.Start_to_MerchantUI_Falg = True
+            # process1.kill()
+            # print("process1.kill()\n")
+        else:
+            self.ui.show()
+
+
+    # 多线程操作启用进度条窗口
+    """注意使用继承QThread的方式无法在子线程中发射信号给主线程"""
+    def run(self):
+        self.signal_startui_to_Merchantui.emit()
+        # self.LogToBar()
+        # 账户密码正确后，先进入进度条，进度条跑完后关闭登录界面，进入交易界面
+        # threadlogin = Thread(target=self.LogToBar())
+        # threadlogin.start()
 
     def login(self):
 
@@ -94,9 +143,24 @@ class StartUI():
                 if len(flag_login)== 2:
 
                     if flag_login[0] is True and flag_login[1] is True:# 从数据库中查询当前账户名和密码，若查询到账户和密码，进入交易界面
+
+
+                        self.ui.hide()
+                        # self.start()
                         # 账户密码正确后，先进入进度条，进度条跑完后关闭登录界面，进入交易界面
                         threadlogin = Thread(target=self.LogToBar())
                         threadlogin.start()
+
+                        while 1:
+                            if self.Start_to_MerchantUI_Falg:
+                                # 进度条走完进入后续界面
+                                # print("Start_to_MerchantUI_Falg")
+                                # bar_process.kill()
+                                self.Merchant = MerchantUI(self.account)
+                                self.Merchant.show()
+                                self.ui.close()
+                                break
+
                     else:
                         QMessageBox.warning(self.ui, '操作失败', "账户密码有误，请确认后登录")
                 elif len(flag_login) == 1:
@@ -212,24 +276,10 @@ class StartUI():
                     break
 
     # 跳转到交易界面，先进入进度条，然后进入界面
+    # 不要在子线程中修改主线程的内容，通过在子线程中发射信号，主线程接收后再去修改
     def LogToBar(self):
         # self.ui.hide()
-        # 使用队列存取线程中函数的返回值
-        q1 = mp.Queue(10)
-
-        # 重新开启进程，运行进度条界面
-        process1 = mp.Process(target=BarInstance,args=(q1,))
-        process1.start()
-        process1.join()
-
-        if q1.get():
-            process1.kill()
-            self.ui.close()
-            self.Merchant = MerchantUI(self.account)
-            self.Merchant.show()
-        else:
-            self.ui.show()
-
+        self.signal_startui_to_Merchantui.emit()
 
 
 
@@ -244,8 +294,17 @@ from ProgressBar import *
 
 if __name__ == '__main__':
 
+    # https://docs.python.org/3/library/multiprocessing.html#multiprocessing.freeze_support
+    # https://github.com/pyinstaller/pyinstaller/issues/182
+    # https: // blog.csdn.net / wm9028 / article / details / 101208869
+    multiprocessing.freeze_support() # 解决使用pyinstaller打包无法进入子进程的界面
+
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon('../UI/Bank.ico'))
     panel = StartUI()
     panel.ui.show()
     sys.exit(app.exec_())
+
+# pyinstaller -F -c --paths ../venv/Lib/site-packages/shiboken2  --hidden-import PySide2.QtXml StartUI.py
+
+# pyinstaller -F -c -w -D  --hidden-import PySide2.QtXml StartUI.py -i ../UI/Bank.ico

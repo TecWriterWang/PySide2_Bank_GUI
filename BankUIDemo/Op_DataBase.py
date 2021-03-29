@@ -4,7 +4,7 @@
 
 # 数据库操作类
 
-import pymysql
+import pymysql,sys
 
 import hashlib
 
@@ -153,7 +153,7 @@ class Op_DB(object): # 必须使用继承
     def ConFirm_DB(self,Transaction_Flag=1,index=0):
         Modif_Tuple = ('Password','phone','cash','email')
         if Transaction_Flag:
-            print(f"{Modif_Tuple[index]}信息修改成功")
+            print(f"{Modif_Tuple[index]}信息修改成功。{__file__},{sys._getframe().f_lineno}")
             self.connection.commit()
         else:
             print("信息修改失败")
@@ -252,24 +252,34 @@ class Op_DB(object): # 必须使用继承
 
     # 登录/注册界面界面查询账户
     def Login_queue(self, CardID,bt_check,pwd=0):
+
+        # 登陆成功标志位
         self.str_account, self.str_pwd = False,False
+
+        # 根据账户从数据库中查找数据
         self.cursor.execute("select * from bankinfo.userinfo where cardID=%s or phone=%s" %(CardID,CardID))
         result = self.cursor.fetchone()
         # print(result)
-        # 登录界面点击检测账户按钮 和登录都进入查询数据库
+
+        # 登录界面点击检测账户按钮 、 登录按钮 都查询数据库
         if result is None:
             # print('当前账户不存在，请确认账户')
             # self.connection.close()#这里不能关闭，目前使用的数据库始终只有一个DB对象，若关闭后，后面在进行操作时会报错
             return (self.str_account,)
 
+        # 账户存在
         else:
+            # 检查账户操作
             if bt_check:
-                self.str_account = True
-                return (self.str_account,)
+                # self.str_account = True
+                return (True,)
+
+            # 登陆操作
             else:
                 try:
                     self.cursor.execute('select * from bankinfo.userinfo where (cardID=%s or phone=%s) and loginPassword="%s"' %(CardID,CardID, self.encrypePW(pwd)))
                     result = self.cursor.fetchone()
+
                     # 先判断是否冻结
                     if result:
                         if result[9]:
@@ -284,7 +294,7 @@ class Op_DB(object): # 必须使用继承
                         # self.connection.close()
                         return (self.str_account, self.str_pwd)
                 except pymysql.err.InternalError:
-                    print("参数%s需要加 `` ")
+                    print("账户异常，请先确认账户信息无误") # 参数%s需要加 ``
 
 
     # 显示在当前账户的交易界面日志
