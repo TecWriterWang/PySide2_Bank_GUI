@@ -7,6 +7,9 @@ from PySide2.QtCore import QThread,Signal,Slot
 import multiprocessing_win
 import multiprocessing
 
+from __init__ import*
+
+# http://c.biancheng.net/view/1870.html
 
 class StartUI(QThread):
 
@@ -16,8 +19,9 @@ class StartUI(QThread):
         super().__init__()
 
         self.ui = QUiLoader().load('../UI/Start.ui')
-        self.ui.setWindowTitle('登录')
+        self.ui.setWindowTitle('VIP用户登录')
         self.ui.setFixedSize(self.ui.width(), self.ui.height())
+
         self.DB = Op_DB()
 
 
@@ -32,7 +36,7 @@ class StartUI(QThread):
         # 状态栏
         self.status = QMainWindow.statusBar(self.ui)
         self.status.font()
-        self.status.showMessage('欢迎使用MoreMoney账户管理系统')#,5000)
+        self.status.showMessage('                        欢迎使用MoreMoneyBank管理系统')#,5000)
 
         # 设置密码输入框显示圆点
         self.ui.InPassword.setEchoMode(QLineEdit.Password)
@@ -176,34 +180,79 @@ class StartUI(QThread):
 
     # 解冻账户
     def Unlock(self):
+
         Unlock_flag = False
+        input_OK = False
+
         reply = QMessageBox.question(self.ui, u'警告', u'你要解冻账户吗?', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
+            self.ui.hide()
+
+            # self.inputUI = QWidget()
+            # self.inputUI.setGeometry(900, 600, 300, 89)
+            # # self.inputlog = QInputDialog(self.inputUI)
+            # self.inputUI.show()
+
             while 1:
-                CardID, okPressed  = QInputDialog.getText(self.ui, "请输入你的卡号/手机号","CardID:",QLineEdit.Normal, "")
-                if okPressed:
-                    if re.compile(r"[0-9]*").fullmatch(CardID): # 检测卡号是否为纯数字
-                        Name, okPressed = QInputDialog.getText(self.ui, "请输入你的用户名", "Name:", QLineEdit.Normal, "")
-                        if okPressed:
-                            if self.DB.queue_data(CardID, Name):
-                                QMessageBox.information(self.ui, "Information",
-                                                        "Your CardID is: <b>" + CardID + "</b>\nYour Name is：<b>" + Name + "</b>")
-                                Unlock_flag = True
-                                break # 卡号输入正确跳出循环
+                AdminID, okPressed_AdminID = QInputDialog.getText(self.ui, "请输入管理员账户", "AdminID:", QLineEdit.Normal, "")
+                # self.inuput.show()
+                if okPressed_AdminID:
+                    if len(AdminID):
+                        AdminPWD, okPressed_AdminPWD = QInputDialog.getText(self.ui, "请输入管理员密码", "AdminPWD:", QLineEdit.Normal, "")
+                        if okPressed_AdminPWD:
+                            if len(AdminPWD):
+                                if AdminID == "root" and AdminPWD == "root":
+                                      input_OK = True
+                                      break
+                                else:
+                                    QMessageBox.critical(self.ui, '账号密码错误', "管理员账号密码不匹配")
+                                    continue
                             else:
-                                QMessageBox.critical(self.ui, '信息有误', "请重新输入您的卡号和用户名")
+                                QMessageBox.critical(self.ui, '密码错误', "密码为空，请重新输入")
                                 continue
                         else:
-                            break # 退出用户名对话输入框
-
+                            self.ui.show()
+                            break  # 退出AdminID对话输入框
                     else:
-                        QMessageBox.critical(self.ui, '卡号有误', "卡号为11位数字")
+                        QMessageBox.critical(self.ui, '账号有误', "账号为空，请重新输入")
                         continue
-
                 else:
-                    break # 退出CardID对话输入框
+                    self.ui.show()
+                    break
+
+            if input_OK:
+                input_OK = False
+                while 1:
+                    CardID, okPressed  = QInputDialog.getText(self.ui, "请输入你的卡号/手机号","CardID:",QLineEdit.Normal, "")
+                    if okPressed:
+                        if len(CardID):
+                            if re.compile(r"[0-9]*?").fullmatch(CardID): # 检测卡号是否为纯数字
+                                Name, okPressed = QInputDialog.getText(self.ui, "请输入你的用户名", "Name:", QLineEdit.Normal, "")
+                                if okPressed:
+                                    if len(Name):
+                                        if self.DB.queue_data(CardID, Name):
+                                            QMessageBox.information(self.ui, "Information",
+                                                                    "Your CardID is: <b>" + CardID + "</b>\nYour Name is：<b>" + Name + "</b>")
+                                            Unlock_flag = True
+                                            break # 卡号输入正确跳出循环
+                                        else:
+                                            QMessageBox.critical(self.ui, '账号信息有误', "请重新输入您的卡号和用户名")
+                                            continue
+                                    else:
+                                        QMessageBox.critical(self.ui, '用户名错误', "用户名为空，请重新输入")
+                                        continue
+                                else:
+                                    break # 退出用户名对话输入框
+                        else:
+                            QMessageBox.critical(self.ui, '卡号有误', "卡号为11位数字")
+                            continue
+                    else:
+                        break
+
+                self.ui.show()
+
         else:
-            pass # 忽略冻结账户对话框
+            self.ui.show()
 
         # 执行解冻操作
         if Unlock_flag:
@@ -280,7 +329,6 @@ class StartUI(QThread):
     def LogToBar(self):
         # self.ui.hide()
         self.signal_startui_to_Merchantui.emit()
-
 
 
 # 导入放在最后，因为交叉引用会出问题

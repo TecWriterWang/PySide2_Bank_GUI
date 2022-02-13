@@ -36,7 +36,7 @@ class SMPT_Eamil():
         # 设置邮件的主题，附件、邮件体
         self.email_body = MIMEMultipart('mixed')
         # 设置发件人的账户
-        self.email_from_username = 'hnlgwanghao@163.com'
+        self.email_from_username = 'xxx@163.com'
         # 设置当前账户的163邮箱授权码
         self.email_from_AuthorCode = 'BEMBROJZTXOWXONL'
 
@@ -104,7 +104,7 @@ class Zmail_Test():
 
     def __init__(self):
         self.send_flag = 0
-        self.email_from_username = 'hnlgwanghao@163.com'
+        self.email_from_username = 'XXX@163.com'
         self.email_from_AuthorCode = 'BEMBROJZTXOWXONL'
         self.server = zmail.server(self.email_from_username,self.email_from_AuthorCode)
 
@@ -124,7 +124,7 @@ class yagmail_Test():
     def __init__(self):
         self.send_flag = 0 #用于后续确认发送邮件
         self.mail_host = 'smtp.163.com'
-        self.email_from_username = 'hnlgwanghao@163.com'
+        self.email_from_username = 'XXX@163.com'
         self.email_from_AuthorCode = 'BEMBROJZTXOWXONL'
         self.server = yagmail.SMTP(self.email_from_username,self.email_from_AuthorCode,self.mail_host)
 
@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
     # print(email.generate_Email_Body.__doc__)
 
-    to_userName = ['1182818968@qq.com',]
+    to_userName = ['XXX@qq.com',]
     email_content = 'Hello this is Pyton SMTP'
     email.commit_send()
     email.generate_Email_Body(to_userName,'python SMTP Test',email_content)
@@ -160,15 +160,15 @@ if __name__ == '__main__':
         'attachments': ['H:\PythonWorkSpace\PyQtStudio\BankScript\Hash.py'],
     }
 
-    to_user = ['1182818968@qq.com',]
+    to_user = ['XXX@qq.com',]
     zmail_obj = Zmail_Test()
     zmail_obj.sendEmail(to_user,Mail_Body)
     """
 
     """yagmail_Test"""
-    to_user_addr = ['1182818968@qq.com',]
-    email_content = '简历'
+    to_user_addr = ['XXX@qq.com',]
+    email_content = 'XXX'
 
     yagmail_obj = yagmail_Test()
     yagmail_obj.commit_send()
-    yagmail_obj.sendEmail(to_user_addr,'简历',email_content,'C:\\Users\\GitWang\\Desktop\\技术文档开发工程师_王浩_183-9000-7300.pdf')
+    yagmail_obj.sendEmail(to_user_addr,'XXX',email_content,'xxx.pdf')
